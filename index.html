@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>75% Attendance Report (April to September)</title>
+  <style>
+    :root {
+      --primary: #1e3a8a;
+      --primary-hover: #1e40af;
+      --wa-color: #25d366;
+      --wa-dark: #128c7e;
+      --bg: #f8fafc;
+      --border: #cbd5e1;
+      --text: #1e293b;
+    }
+
+    * {
+      box-sizing: border-box;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      margin: 0;
+      padding: 20px;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      background: #ffffff;
+      padding: 24px;
+      border-radius: 8px;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    }
+
+    /* WhatsApp Mandatory Modal */
+    #waModal {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.75);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 9999;
+      padding: 16px;
+    }
+
+    .modal-card {
+      background: #fff;
+      padding: 28px;
+      max-width: 480px;
+      width: 100%;
+      border-radius: 12px;
+      text-align: center;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+    }
+
+    .modal-card h2 {
+      margin-top: 0;
+      color: var(--wa-dark);
+      font-size: 1.35rem;
+    }
+
+    .modal-card p {
+      font-size: 0.95rem;
+      color: #475569;
+      line-height: 1.5;
+    }
+
+    .btn-wa {
+      display: inline-block;
+      margin: 16px 0;
+      background-color: var(--wa-color);
+      color: #fff;
+      text-decoration: none;
+      padding: 12px 24px;
+      font-weight: 600;
+      border-radius: 6px;
+      font-size: 1rem;
+      transition: background 0.2s;
+    }
+
+    .btn-wa:hover {
+      background-color: var(--wa-dark);
+    }
+
+    .btn-proceed {
+      display: block;
+      width: 100%;
+      padding: 10px;
+      background: #0f172a;
+      color: #fff;
+      border: none;
+      border-radius: 6px;
+      font-size: 0.95rem;
+      cursor: pointer;
+    }
+
+    .btn-proceed:disabled {
+      background: #94a3b8;
+      cursor: not-allowed;
+    }
+
+    /* Form Styles */
+    h1 {
+      text-align: center;
+      margin-bottom: 4px;
+      font-size: 1.5rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .subtitle {
+      text-align: center;
+      margin-top: 0;
+      margin-bottom: 24px;
+      font-weight: 600;
+      color: #475569;
+    }
+
+    .header-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 16px;
+      margin-bottom: 24px;
+      background: #f1f5f9;
+      padding: 16px;
+      border-radius: 6px;
+    }
+
+    .field-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .field-group label {
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: #334155;
+    }
+
+    .field-group input {
+      padding: 8px 10px;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      font-size: 0.9rem;
+    }
+
+    /* Table Styles */
+    .table-responsive {
+      overflow-x: auto;
+      margin-bottom: 24px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.85rem;
+      min-width: 900px;
+    }
+
+    th, td {
+      border: 1px solid var(--border);
+      padding: 8px 6px;
+      text-align: center;
+    }
+
+    th {
+      background-color: #e2e8f0;
+      color: #0f172a;
+      font-weight: 600;
+    }
+
+    th.month-col {
+      background-color: #cbd5e1;
+    }
+
+    input.cell-input {
+      width: 100%;
+      border: none;
+      outline: none;
+      background: transparent;
+      text-align: center;
+      font-size: 0.85rem;
+    }
+
+    input.cell-input:focus {
+      background: #eff6ff;
+    }
+
+    .text-left {
+      text-align: left;
+    }
+
+    .read-only-cell {
+      background-color: #f8fafc;
+      font-weight: 600;
+    }
+
+    .badge-yes {
+      color: #15803d;
+      font-weight: 700;
+    }
+
+    .badge-no {
+      color: #b91c1c;
+      font-weight: 700;
+    }
+
+    .btn-add-row {
+      margin-bottom: 16px;
+      padding: 8px 14px;
+      background: #475569;
+      color: #fff;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 0.85rem;
+    }
+
+    .btn-add-row:hover {
+      background: #334155;
+    }
+
+    /* Footer Signatures */
+    .signature-grid {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 48px;
+      padding-top: 16px;
+    }
+
+    .sign-box {
+      border-top: 1px solid #000;
+      width: 250px;
+      text-align: center;
+      font-size: 0.9rem;
+      font-weight: 600;
+      padding-top: 6px;
+    }
+
+    .form-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 12px;
+      margin-top: 24px;
+    }
+
+    .btn-submit {
+      padding: 10px 24px;
+      background: var(--primary);
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-weight: 600;
+    }
+
+    .btn-submit:hover {
+      background: var(--primary-hover);
+    }
+
+    @media print {
+      body {
+        background: #fff;
+        padding: 0;
+      }
+      .container {
+        box-shadow: none;
+        padding: 0;
+        max-width: 100%;
+      }
+      #waModal, .btn-add-row, .form-actions {
+        display: none !important;
+      }
+      input {
+        border: none !important;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Mandatory WhatsApp Channel Modal -->
+  <div id="waModal">
+    <div class="modal-card">
+      <h2>Notice: WhatsApp Channel Required</h2>
+      <p>Before filling the 75% Attendance Report, you must join the official DEO Office WhatsApp Channel for directives and updates.</p>
+      <a href="https://whatsapp.com/channel/0029VaIhMoY35fM4YK5xrz3P" 
+         target="_blank" 
+         id="waChannelLink" 
+         class="btn-wa">
+        Join DEO Office Channel
+      </a>
+      <p style="font-size: 0.8rem; color: #64748b;">Click the link above to unlock access to the attendance form.</p>
+      <button id="btnProceed" class="btn-proceed" disabled>I Have Joined / Open Form</button>
+    </div>
+  </div>
+
+  <div class="container">
+    <form id="attendanceForm">
+      <h1>75% Attendance Report (April to September)</h1>
+      <p class="subtitle">Session: 2026 - 27</p>
+
+      <div class="header-grid">
+        <div class="field-group">
+          <label for="schoolName">School Name</label>
+          <input type="text" id="schoolName" name="schoolName" required placeholder="Enter school name">
+        </div>
+        <div class="field-group">
+          <label for="classSection">Class & Section</label>
+          <input type="text" id="classSection" name="classSection" required placeholder="e.g., Class 10 - A">
+        </div>
+        <div class="field-group">
+          <label for="udise">UDISE Code</label>
+          <input type="text" id="udise" name="udise" required placeholder="11-digit UDISE">
+        </div>
+        <div class="field-group">
+          <label for="reportDate">Date</label>
+          <input type="date" id="reportDate" name="reportDate" required>
+        </div>
+        <div class="field-group">
+          <label for="totalWorkingDays">Total Working Days (Apr - Sep)</label>
+          <input type="number" id="totalWorkingDays" name="totalWorkingDays" min="1" required placeholder="e.g., 120" oninput="calculateAll()">
+        </div>
+      </div>
+
+      <button type="button" class="btn-add-row" onclick="addStudentRow()">+ Add Row</button>
+
+      <div class="table-responsive">
+        <table id="attendanceTable">
+          <thead>
+            <tr>
+              <th rowspan="2" style="width: 45px;">S.N.</th>
+              <th rowspan="2" style="width: 80px;">Roll No.</th>
+              <th rowspan="2" style="width: 220px;">Name of Student</th>
+              <th colspan="6">Monthly Present Days</th>
+              <th rowspan="2" style="width: 75px;">Total Present</th>
+              <th rowspan="2" style="width: 70px;">Attn. %</th>
+              <th rowspan="2" style="width: 90px;">Eligible (&ge;75%)<br>(Yes/No)</th>
+            </tr>
+            <tr>
+              <th class="month-col" style="width: 50px;">Apr</th>
+              <th class="month-col" style="width: 50px;">May</th>
+              <th class="month-col" style="width: 50px;">Jun</th>
+              <th class="month-col" style="width: 50px;">Jul</th>
+              <th class="month-col" style="width: 50px;">Aug</th>
+              <th class="month-col" style="width: 50px;">Sep</th>
+            </tr>
+          </thead>
+          <tbody id="studentBody">
+            <!-- Rows dynamically created via JS -->
+          </tbody>
+        </table>
+      </div>
+
+      <div class="signature-grid">
+        <div class="sign-box">Class Teacher's Signature</div>
+        <div class="sign-box">Headmaster / Principal Signature &amp; Seal</div>
+      </div>
+
+      <div class="form-actions">
+        <button type="button" class="btn-submit" onclick="window.print()">Print Report</button>
+        <button type="submit" class="btn-submit">Submit Form</button>
+      </div>
+    </form>
+  </div>
+
+  <script>
+    // WhatsApp Verification Logic
+    const waModal = document.getElementById('waModal');
+    const waChannelLink = document.getElementById('waChannelLink');
+    const btnProceed = document.getElementById('btnProceed');
+
+    // Check if the user has already completed the channel join step
+    if (localStorage.getItem('deo_channel_joined') === 'true') {
+      waModal.style.display = 'none';
+    }
+
+    waChannelLink.addEventListener('click', () => {
+      // Enable the proceed button once the user clicks the invite link
+      btnProceed.removeAttribute('disabled');
+      btnProceed.textContent = "Continue to Form";
+    });
+
+    btnProceed.addEventListener('click', () => {
+      localStorage.setItem('deo_channel_joined', 'true');
+      waModal.style.display = 'none';
+    });
+
+    // Populate initial 25 rows as shown in the document
+    const tbody = document.getElementById('studentBody');
+    const initialRowsCount = 25;
+
+    function buildRow(index) {
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td>${index}</td>
+        <td><input type="text" class="cell-input" name="roll_${index}"></td>
+        <td><input type="text" class="cell-input text-left" name="name_${index}"></td>
+        <td><input type="number" min="0" class="cell-input month-input" name="apr_${index}" oninput="calcRow(this)"></td>
+        <td><input type="number" min="0" class="cell-input month-input" name="may_${index}" oninput="calcRow(this)"></td>
+        <td><input type="number" min="0" class="cell-input month-input" name="jun_${index}" oninput="calcRow(this)"></td>
+        <td><input type="number" min="0" class="cell-input month-input" name="jul_${index}" oninput="calcRow(this)"></td>
+        <td><input type="number" min="0" class="cell-input month-input" name="aug_${index}" oninput="calcRow(this)"></td>
+        <td><input type="number" min="0" class="cell-input month-input" name="sep_${index}" oninput="calcRow(this)"></td>
+        <td class="read-only-cell total-present">-</td>
+        <td class="read-only-cell attn-pct">-</td>
+        <td class="read-only-cell eligibility">-</td>
+      `;
+      return tr;
+    }
+
+    for (let i = 1; i <= initialRowsCount; i++) {
+      tbody.appendChild(buildRow(i));
+    }
+
+    function addStudentRow() {
+      const currentCount = tbody.children.length;
+      tbody.appendChild(buildRow(currentCount + 1));
+    }
+
+    // Row Calculation Logic
+    function calcRow(inputElement) {
+      const row = inputElement.closest('tr');
+      const monthInputs = row.querySelectorAll('.month-input');
+      const totalPresentCell = row.querySelector('.total-present');
+      const pctCell = row.querySelector('.attn-pct');
+      const eligibleCell = row.querySelector('.eligibility');
+      const totalWorkingDays = parseFloat(document.getElementById('totalWorkingDays').value);
+
+      let totalPresent = 0;
+      let hasValue = false;
+
+      monthInputs.forEach(input => {
+        const val = parseFloat(input.value);
+        if (!isNaN(val)) {
+          totalPresent += val;
+          hasValue = true;
+        }
+      });
+
+      if (!hasValue) {
+        totalPresentCell.textContent = '-';
+        pctCell.textContent = '-';
+        eligibleCell.innerHTML = '-';
+        return;
+      }
+
+      totalPresentCell.textContent = totalPresent;
+
+      if (!isNaN(totalWorkingDays) && totalWorkingDays > 0) {
+        const percentage = (totalPresent / totalWorkingDays) * 100;
+        const roundedPct = percentage.toFixed(1);
+        pctCell.textContent = `${roundedPct}%`;
+
+        if (percentage >= 75) {
+          eligibleCell.innerHTML = '<span class="badge-yes">Yes</span>';
+        } else {
+          eligibleCell.innerHTML = '<span class="badge-no">No</span>';
+        }
+      } else {
+        pctCell.textContent = 'Set Days';
+        eligibleCell.innerHTML = '-';
+      }
+    }
+
+    function calculateAll() {
+      const allRows = tbody.querySelectorAll('tr');
+      allRows.forEach(row => {
+        const firstInput = row.querySelector('.month-input');
+        if (firstInput) calcRow(firstInput);
+      });
+    }
+
+    document.getElementById('attendanceForm').addEventListener('submit', (e) => {
+      e.preventDefault();
+      alert('Attendance report submitted successfully.');
+    });
+  </script>
+</body>
+</html>
